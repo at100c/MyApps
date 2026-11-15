@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light" />
+    <link rel="icon" href="data:," />
+    <title>ETF 趋势仪表盘 · 网页版</title>
+    <style>
+      :root {
+        --bg: #F7F4EE;
+        --ink: #2E2A24;
+        --ink-soft: #5C554A;
+        --ink-faint: #8A8172;
+        --brick: #9C2F1F;
+        --up: #1E7A3C;
+        --down: #B3372A;
+        --shadow-dark: rgba(168, 152, 128, 0.45);
+        --shadow-light: rgba(255, 255, 255, 0.95);
+        color-scheme: light;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        line-height: 1.45;
+      }
+      .wrap { max-width: 1120px; margin: 0 auto; padding: 28px 20px 56px; }
+
+      /* ---------- 页眉 ---------- */
+      header.page-head { margin-bottom: 30px; }
+      h1 {
+        font-size: 30px; font-weight: 800; letter-spacing: 0.5px;
+        margin: 0 0 6px;
+      }
+      .snapshot-line { color: var(--ink-soft); font-size: 14px; margin: 0 0 18px; }
+      .snapshot-line strong { color: var(--brick); font-weight: 700; }
+      .status-row { display: flex; flex-wrap: wrap; gap: 14px; }
+      .status-chip {
+        background: var(--bg);
+        border-radius: 14px;
+        padding: 12px 18px;
+        box-shadow: inset 3px 3px 7px var(--shadow-dark), inset -3px -3px 7px var(--shadow-light);
+        font-size: 14px; color: var(--ink-soft);
+        display: flex; align-items: baseline; gap: 8px;
+      }
+      .status-chip b { font-size: 17px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+      .status-chip b.neg { color: var(--down); }
+      .status-chip b.pos { color: var(--up); }
+
+      /* ---------- 区块标题 ---------- */
+      h2.section-title {
+        font-size: 21px; font-weight: 800; margin: 38px 0 4px;
+        display: flex; align-items: center; gap: 10px;
+      }
+      h2.section-title::before {
+        content: ""; width: 9px; height: 22px; border-radius: 5px;
+        background: var(--brick); display: inline-block; flex: none;
+      }
+      .section-note { color: var(--ink-faint); font-size: 13px; margin: 0 0 18px 19px; }
+      h3.group-title {
+        font-size: 16px; font-weight: 700; color: var(--ink-soft);
+        margin: 24px 0 12px; letter-spacing: 1px;
+      }
+      h3.group-title:first-of-type { margin-top: 6px; }
+
+      /* ---------- ETF 面板 ---------- */
+      .panel-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(248px, 1fr));
+        gap: 18px;
+      }
+      .etf-panel {
+        background: var(--bg);
+        border-radius: 20px;
+        padding: 18px 18px 14px;
+        box-shadow: 7px 7px 14px var(--shadow-dark), -7px -7px 14px var(--shadow-light),
+                    inset 1px 1px 0 rgba(255,255,255,0.85);
+      }
+      .panel-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+      .symbol { font-size: 23px; font-weight: 800; letter-spacing: 0.4px; }
+      .category { font-size: 12.5px; color: var(--ink-faint); text-align: right; }
+      .price-row { display: flex; align-items: baseline; gap: 12px; margin: 8px 0 12px; }
+      .close { font-size: 21px; font-weight: 700; font-variant-numeric: tabular-nums; }
+      .day-change { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+      .day-change.up { color: var(--up); }
+      .day-change.down { color: var(--down); }
+      .day-change.flat { color: var(--ink-faint); }
+      .metrics {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 7px 14px;
+        border-top: 1px solid rgba(168, 152, 128, 0.35);
+        padding-top: 11px;
+      }
+      .metric { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; font-size: 13px; }
+      .metric .m-label { color: var(--ink-faint); white-space: nowrap; }
+      .metric .m-value { font-weight: 600; font-size: 14.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .metric .m-value.neg { color: var(--down); }
+      .metric .m-value.na { color: var(--ink-faint); font-weight: 400; }
+
+      /* ---------- 热力图 ---------- */
+      .treemap-box {
+        background: var(--bg);
+        border-radius: 20px;
+        padding: 14px;
+        box-shadow: inset 4px 4px 9px var(--shadow-dark), inset -4px -4px 9px var(--shadow-light);
+      }
+      .treemap { position: relative; width: 100%; }
+      .tm-cell {
+        position: absolute;
+        border-radius: 8px;
+        overflow: hidden;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        text-align: center;
+        padding: 3px;
+        border: 1px solid rgba(255,255,255,0.55);
+      }
+      .tm-sym { font-weight: 800; line-height: 1.15; letter-spacing: 0.3px; }
+      .tm-chg { font-weight: 600; line-height: 1.2; font-variant-numeric: tabular-nums; }
+      .tm-note { line-height: 1.25; opacity: 0.85; }
+      .legend {
+        display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        font-size: 12.5px; color: var(--ink-faint); margin: 12px 2px 0;
+      }
+      .legend .swatch { width: 46px; height: 12px; border-radius: 6px; flex: none;
+        background: linear-gradient(90deg, #B3372A, #EFE9DD 50%, #1E7A3C); }
+
+      footer.page-foot {
+        margin-top: 44px; font-size: 12.5px; color: var(--ink-faint);
+        border-top: 1px solid rgba(168,152,128,0.35); padding-top: 14px;
+      }
+
+      @media (max-width: 560px) {
+        .wrap { padding: 20px 14px 44px; }
+        h1 { font-size: 25px; }
+        .panel-grid { grid-template-columns: 1fr 1fr; gap: 13px; }
+        .etf-panel { padding: 14px 13px 11px; border-radius: 16px; }
+        .symbol { font-size: 19px; }
+        .close { font-size: 17px; }
+        .metrics { grid-template-columns: 1fr; gap: 6px; }
+        .metric { flex-direction: row; justify-content: space-between; align-items: baseline; }
+      }
+      @media (max-width: 380px) {
+        .panel-grid { grid-template-columns: 1fr; }
+        .metrics { grid-template-columns: 1fr 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="page-head">
+        <h1>ETF 趋势仪表盘</h1>
+        <p class="snapshot-line">数据日 <strong>2026-11-13</strong> · 快照（静态页，数据截至该日收盘）</p>
+        <div class="status-row">
+          <div class="status-chip">纳指距 200 日线 <b id="ndx-dist">—</b></div>
+          <div class="status-chip">杠杆带状态 <b id="lev-band">—</b></div>
+        </div>
+      </header>
+
+      <section aria-label="每日数据">
+        <h2 class="section-title">每日数据</h2>
+        <p class="section-note">价格为数据日收盘价；偏离为收盘价距各均线的百分比；估值分位无数据时显示 —。</p>
+        <div id="daily-groups"></div>
+      </section>
+
+      <section aria-label="每日涨幅热力图">
+        <h2 class="section-title">我的 ETF · 每日涨幅热力图</h2>
+        <p class="section-note">方块面积按各格目标权重比例排布；颜色绿涨红跌，深浅按当日涨跌幅、±3% 封顶。</p>
+        <div id="heatmap-groups"></div>
+        <div class="legend">
+          <span>−3%</span><span class="swatch" aria-hidden="true"></span><span>+3%</span>
+          <span>· 块内为代码与当日涨跌幅</span>
+        </div>
+      </section>
+
+      <footer class="page-foot">ETF 趋势仪表盘 · 网页版 — 数据日 2026-11-13 快照。</footer>
+    </div>
+
+    <script>
+      // ===== 数据快照（数据日 2026-11-13，全量嵌入）=====
+      var DATA = {
+        data_date: "2026-11-13",
+        ndx_dist_200: -0.341,
+        lev_band_state: "out",
+        etfs: [
+          {symbol:"XEQT",account:"TFSA",category:"全球大盘",close:45.52,day_change:-0.1316,dist_21:0.7871,dist_50:0.2002,dist_200:4.5845,valuation:10.4382},
+          {symbol:"VFV",account:"TFSA",category:"美国大盘",close:191.4,day_change:-0.3436,dist_21:0.6687,dist_50:0.0437,dist_200:6.0513,valuation:7.7291},
+          {symbol:"QQC",account:"TFSA",category:"美国纳指",close:47.39,day_change:-1.0854,dist_21:-0.9751,dist_50:-3.8894,dist_200:2.3915,valuation:3.6653},
+          {symbol:"TEC",account:"TFSA",category:"全球科技",close:59.5,day_change:-1.0806,dist_21:-1.6359,dist_50:-4.524,dist_200:3.0281,valuation:2.3108},
+          {symbol:"DGRC",account:"TFSA",category:"高分红",close:58.11,day_change:0.6582,dist_21:0.6566,dist_50:2.1416,dist_200:7.2419,valuation:21.3546},
+          {symbol:"CEW",account:"TFSA",category:"加国银行",close:35.78,day_change:-0.1396,dist_21:0.6626,dist_50:1.787,dist_200:11.4741,valuation:3.1873},
+          {symbol:"ZLSC",account:"TFSA",category:"多空对冲/因子",close:49.29,day_change:-0.0608,dist_21:-0.0676,dist_50:0.6844,dist_200:4.5632,valuation:17.8571},
+          {symbol:"XMV",account:"TFSA",category:"加国低波动",close:63.3,day_change:0.2217,dist_21:1.7163,dist_50:3.8681,dist_200:7.6295,valuation:0.5578},
+          {symbol:"VEQT",account:"RRSP",category:"全球大盘",close:61.95,day_change:-0.1612,dist_21:0.6943,dist_50:0.0472,dist_200:4.4084,valuation:3.9841},
+          {symbol:"ZSP",account:"RRSP",category:"美国大盘",close:118.18,day_change:-0.3289,dist_21:0.6607,dist_50:0.0363,dist_200:6.0482,valuation:8.7649},
+          {symbol:"HXQ",account:"RRSP",category:"美国纳指",close:114.73,day_change:-1.1374,dist_21:-1.0583,dist_50:-3.9355,dist_200:2.3241,valuation:null},
+          {symbol:"FINN",account:"RRSP",category:"全球科技",close:32.7,day_change:0.2145,dist_21:-0.1802,dist_50:-1.7372,dist_200:8.9716,valuation:null},
+          {symbol:"XDU",account:"RRSP",category:"高分红",close:40.28,day_change:0.2988,dist_21:2.8775,dist_50:5.9408,dist_200:11.4643,valuation:95.3785},
+          {symbol:"RBNK",account:"RRSP",category:"加国银行",close:51.89,day_change:-0.0385,dist_21:1.4122,dist_50:2.8009,dist_200:11.9403,valuation:2.3904},
+          {symbol:"TILV",account:"RRSP",category:"世界低波动",close:22.59,day_change:0.4,dist_21:1.9448,dist_50:3.5778,dist_200:8.0761,valuation:8.4462},
+          {symbol:"ZLU",account:"RRSP",category:"美国低波动",close:69.03,day_change:0.4804,dist_21:4.1929,dist_50:7.2907,dist_200:10.1006,valuation:0.4566},
+          {symbol:"QQU",account:"RRSP",category:"短期·纳指2倍",close:33.21,day_change:-2.467,dist_21:-5.6164,dist_50:-11.797,dist_200:-5.969,valuation:null}
+        ],
+        usd_etfs: [
+          {symbol:"VT",account:"USD_RRSP",category:"全球大盘",close:155.3,day_change:-0.2889,dist_21:-0.5164,dist_50:-1.6383,dist_200:1.7038,valuation:null},
+          {symbol:"SOXQ",account:"USD_RRSP",category:"半导体",close:79.85,day_change:-3.4579,dist_21:-4.9135,dist_50:-12.3761,dist_200:-6.6869,valuation:null},
+          {symbol:"SCHD",account:"USD_RRSP",category:"美国分红",close:36.12,day_change:0.5288,dist_21:2.0462,dist_50:5.5379,dist_200:11.8065,valuation:9.8361}
+        ],
+        heatmap: [
+          {symbol:"XEQT",section:"TFSA",weight:8,close:45.52,day_change:-0.1316,note:null},
+          {symbol:"QQC",section:"TFSA",weight:6,close:47.39,day_change:-1.0854,note:null},
+          {symbol:"VFV",section:"TFSA",weight:4,close:191.4,day_change:-0.3436,note:null},
+          {symbol:"TEC",section:"TFSA",weight:4,close:59.5,day_change:-1.0806,note:null},
+          {symbol:"DGRC",section:"TFSA",weight:2,close:58.11,day_change:0.6582,note:null},
+          {symbol:"CEW",section:"TFSA",weight:2,close:35.78,day_change:-0.1396,note:null},
+          {symbol:"ZLSC",section:"TFSA",weight:2,close:49.29,day_change:-0.0608,note:null},
+          {symbol:"XMV",section:"TFSA",weight:2,close:63.3,day_change:0.2217,note:null},
+          {symbol:"XEG",section:"TFSA",weight:1,close:28.69,day_change:0.9145,note:null},
+          {symbol:"VEQT",section:"RRSP",weight:8,close:61.95,day_change:-0.1612,note:null},
+          {symbol:"HXQ",section:"RRSP",weight:6,close:114.73,day_change:-1.1374,note:null},
+          {symbol:"ZSP",section:"RRSP",weight:4,close:118.18,day_change:-0.3289,note:null},
+          {symbol:"FINN",section:"RRSP",weight:4,close:32.7,day_change:0.2145,note:null},
+          {symbol:"XDU",section:"RRSP",weight:2,close:40.28,day_change:0.2988,note:null},
+          {symbol:"RBNK",section:"RRSP",weight:2,close:51.89,day_change:-0.0385,note:null},
+          {symbol:"TILV",section:"RRSP",weight:2,close:22.59,day_change:0.4,note:null},
+          {symbol:"ZLU",section:"RRSP",weight:2,close:69.03,day_change:0.4804,note:null},
+          {symbol:"HXE",section:"RRSP",weight:1,close:63.63,day_change:0.6645,note:null},
+          {symbol:"XMA",section:"RRSP",weight:1,close:42.18,day_change:-0.636,note:null},
+          {symbol:"QQU",section:"RRSP",weight:1,close:33.21,day_change:-2.467,note:null},
+          {symbol:"XRE",section:"RRSP",weight:null,close:15.68,day_change:1.1613,note:"观察 · 无目标金额"}
+        ]
+      };
+
+      // ===== 格式化 =====
+      function fmtPct(v, digits) {
+        if (v === null || v === undefined || isNaN(v)) return "—";
+        var d = (digits === undefined) ? 2 : digits;
+        var s = Math.abs(v).toFixed(d);
+        return (v > 0 ? "+" : (v < 0 ? "−" : "")) + s + "%";
+      }
+      function fmtMoney(v) { return "$" + v.toFixed(2); }
+      function chgClass(v) { return v > 0 ? "up" : (v < 0 ? "down" : "flat"); }
+
+      // ===== 页眉状态 =====
+      (function () {
+        var ndx = document.getElementById("ndx-dist");
+        ndx.textContent = fmtPct(DATA.ndx_dist_200);
+        ndx.className = DATA.ndx_dist_200 < 0 ? "neg" : "pos";
+        var lev = document.getElementById("lev-band");
+        lev.textContent = DATA.lev_band_state === "out" ? "带外 · 未部署" : DATA.lev_band_state;
+      })();
+
+      // ===== 每日数据面板 =====
+      function panelHTML(e) {
+        var val = (e.valuation === null || e.valuation === undefined)
+          ? '<span class="m-value na">—</span>'
+          : '<span class="m-value">' + e.valuation.toFixed(1) + '</span>';
+        function dist(label, v) {
+          return '<div class="metric"><span class="m-label">' + label + '</span>' +
+                 '<span class="m-value' + (v < 0 ? ' neg' : '') + '">' + fmtPct(v) + '</span></div>';
+        }
+        return '<article class="etf-panel">' +
+          '<div class="panel-top"><span class="symbol">' + e.symbol + '</span>' +
+          '<span class="category">' + e.category + '</span></div>' +
+          '<div class="price-row"><span class="close">' + fmtMoney(e.close) + '</span>' +
+          '<span class="day-change ' + chgClass(e.day_change) + '">' + fmtPct(e.day_change) + '</span></div>' +
+          '<div class="metrics">' +
+            dist("距 21 日线", e.dist_21) +
+            dist("距 50 日线", e.dist_50) +
+            dist("距 200 日线", e.dist_200) +
+            '<div class="metric"><span class="m-label">估值分位</span>' + val + '</div>' +
+          '</div></article>';
+      }
+      (function () {
+        var groups = [
+          { title: "TFSA", items: DATA.etfs.filter(function (e) { return e.account === "TFSA"; }) },
+          { title: "RRSP", items: DATA.etfs.filter(function (e) { return e.account === "RRSP"; }) },
+          { title: "美元 RRSP", items: DATA.usd_etfs }
+        ];
+        var html = "";
+        groups.forEach(function (g) {
+          html += '<h3 class="group-title">' + g.title + '</h3><div class="panel-grid">' +
+                  g.items.map(panelHTML).join("") + '</div>';
+        });
+        document.getElementById("daily-groups").innerHTML = html;
+      })();
+
+      // ===== 热力图（squarified treemap）=====
+      function mixColor(t) {
+        // t ∈ [-1, 1]，0 为底色；正绿负红
+        var base = [239, 233, 221];
+        var target = t >= 0 ? [30, 122, 60] : [179, 55, 42];
+        var k = Math.pow(Math.abs(t), 0.75);
+        var r = Math.round(base[0] + (target[0] - base[0]) * k);
+        var g = Math.round(base[1] + (target[1] - base[1]) * k);
+        var b = Math.round(base[2] + (target[2] - base[2]) * k);
+        return { bg: "rgb(" + r + "," + g + "," + b + ")", strong: Math.abs(t) > 0.45 };
+      }
+      function worst(row, side) {
+        var s = 0, mx = -Infinity, mn = Infinity, i, v;
+        for (i = 0; i < row.length; i++) { v = row[i].area; s += v; if (v > mx) mx = v; if (v < mn) mn = v; }
+        return Math.max((side * side * mx) / (s * s), (s * s) / (side * side * mn));
+      }
+      function layoutRow(row, rect, out) {
+        var s = 0, i;
+        for (i = 0; i < row.length; i++) s += row[i].area;
+        if (rect.w >= rect.h) {
+          var colW = s / rect.h, y = rect.y;
+          for (i = 0; i < row.length; i++) {
+            var hh = row[i].area / colW;
+            out.push({ item: row[i].item, x: rect.x, y: y, w: colW, h: hh });
+            y += hh;
+          }
+          return { x: rect.x + colW, y: rect.y, w: rect.w - colW, h: rect.h };
+        } else {
+          var rowH = s / rect.w, x = rect.x;
+          for (i = 0; i < row.length; i++) {
+            var ww = row[i].area / rowH;
+            out.push({ item: row[i].item, x: x, y: rect.y, w: ww, h: rowH });
+            x += ww;
+          }
+          return { x: rect.x, y: rect.y + rowH, w: rect.w, h: rect.h - rowH };
+        }
+      }
+      function squarify(items, rect) {
+        var out = [], row = [], r = { x: rect.x, y: rect.y, w: rect.w, h: rect.h }, i;
+        for (i = 0; i < items.length; i++) {
+          var side = Math.min(r.w, r.h);
+          if (row.length === 0 || worst(row, side) >= worst(row.concat([items[i]]), side)) {
+            row.push(items[i]);
+          } else {
+            r = layoutRow(row, r, out);
+            row = [items[i]];
+          }
+        }
+        if (row.length) layoutRow(row, r, out);
+        return out;
+      }
+      function renderTreemap(container, items, height) {
+        var W = container.clientWidth;
+        if (!W) return;
+        container.style.height = height + "px";
+        container.innerHTML = "";
+        var minWeight = Infinity, total = 0, i, it;
+        for (i = 0; i < items.length; i++) {
+          if (items[i].weight !== null && items[i].weight < minWeight) minWeight = items[i].weight;
+        }
+        var nodes = items.map(function (d) {
+          // weight 只决定面积比例（源数据已归一化，不含金额）；无权重者给最小块
+          var wgt = (d.weight === null) ? minWeight * 0.55 : d.weight;
+          total += wgt;
+          return { item: d, area: wgt };
+        });
+        var scale = (W * height) / total;
+        nodes.forEach(function (n) { n.area *= scale; });
+        var rects = squarify(nodes, { x: 0, y: 0, w: W, h: height });
+        var GAP = 3;
+        rects.forEach(function (rc) {
+          var d = rc.item;
+          var t = Math.max(-1, Math.min(1, d.day_change / 3));
+          var c = mixColor(t);
+          var cell = document.createElement("div");
+          cell.className = "tm-cell";
+          cell.style.left = (rc.x + GAP / 2) + "px";
+          cell.style.top = (rc.y + GAP / 2) + "px";
+          cell.style.width = Math.max(0, rc.w - GAP) + "px";
+          cell.style.height = Math.max(0, rc.h - GAP) + "px";
+          cell.style.background = c.bg;
+          cell.style.color = c.strong ? "#FFFDF7" : "#2E2A24";
+          var minDim = Math.min(rc.w, rc.h);
+          var symSize = Math.max(10, Math.min(19, minDim * 0.30));
+          var chgSize = Math.max(9, Math.min(14.5, minDim * 0.22));
+          var inner = '<div class="tm-sym" style="font-size:' + symSize + 'px">' + d.symbol + '</div>' +
+                      '<div class="tm-chg" style="font-size:' + chgSize + 'px">' + fmtPct(d.day_change) + '</div>';
+          if (d.note && rc.w > 74 && rc.h > 52) {
+            inner += '<div class="tm-note" style="font-size:10.5px">' + d.note + '</div>';
+          }
+          cell.innerHTML = inner;
+          container.appendChild(cell);
+        });
+      }
+      var heatSections = [];
+      (function () {
+        var host = document.getElementById("heatmap-groups");
+        ["TFSA", "RRSP"].forEach(function (sec) {
+          var title = document.createElement("h3");
+          title.className = "group-title";
+          title.textContent = sec;
+          var box = document.createElement("div");
+          box.className = "treemap-box";
+          var tm = document.createElement("div");
+          tm.className = "treemap";
+          box.appendChild(tm);
+          host.appendChild(title);
+          host.appendChild(box);
+          heatSections.push({
+            el: tm,
+            items: DATA.heatmap.filter(function (d) { return d.section === sec; })
+          });
+        });
+      })();
+      function drawHeatmaps() {
+        var mobile = window.innerWidth <= 560;
+        heatSections.forEach(function (s) {
+          renderTreemap(s.el, s.items, mobile ? 300 : 330);
+        });
+      }
+      var resizeTimer = null;
+      window.addEventListener("resize", function () {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(drawHeatmaps, 120);
+      });
+      drawHeatmaps();
+    </script>
+  </body>
+</html>
