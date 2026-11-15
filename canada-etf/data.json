@@ -1,0 +1,48 @@
+{
+ "editions": [
+  {
+   "weekStart": "2026-11-02",
+   "weekEnd": "2026-11-09",
+   "status": "ready",
+   "summary": "本周共1只ETF获得推荐，被推荐次数最多的是CLSA，获推荐1次。",
+   "channelsScanned": 6,
+   "scannedVideos": 5,
+   "includedVideos": 1,
+   "etfs": [
+    {
+     "ticker": "CLSA",
+     "name": "Brompton Split Corp. Enhanced Equity Income ETF",
+     "exchange": "TSX",
+     "inUserList": false,
+     "mentions": [
+      {
+       "channel": "Passive Income Investing",
+       "videoTitle": "CLSA 15% Yield Income ETF: My 5k/Month BUY Strategy Explained for Amazing Total Returns",
+       "videoUrl": "https://www.youtube.com/watch?v=4KQZuOm2VM4",
+       "publishedAt": "2026-11-08",
+       "basis": "据视频内容",
+       "reason": "博主称这是他新近最喜欢的ETF之一：它一站式持有多只分拆股基金、底层多为加拿大金融等蓝筹股，总回报突出；他计划在条件满足时每月买入约5000加元。"
+      }
+     ]
+    }
+   ],
+   "nearMisses": [
+    {
+     "channel": "WealthAwesome",
+     "videoTitle": "VGRO vs XGRO",
+     "videoUrl": "https://www.youtube.com/watch?v=H9f589I4s2g",
+     "publishedAt": "2026-11-02",
+     "note": "二选一比较，作者称两只没有通用赢家——是比较，不是推荐。"
+    },
+    {
+     "channel": "Maple Paisa",
+     "videoTitle": "Why the TSX Held Up When the Nasdaq Crashed",
+     "videoUrl": "https://www.youtube.com/watch?v=_DT7uU2KWyo",
+     "publishedAt": "2026-11-07",
+     "note": "讲解 XEQT/VEQT 的成分与分散作用，作者自述不是买卖推荐。"
+    }
+   ],
+   "note": "种子期最初经网页搜索发现、索引不全，小频道与中文博主的视频可能漏检；本期已用 YouTube 站内关键词（含中文）补跑。"
+  }
+ ]
+}
