@@ -1,0 +1,400 @@
+{
+ "data_date": "2026-11-13",
+ "last_fetched_at": "2026-11-13T23:26:57Z",
+ "ndx_dist_200": -0.341,
+ "lev_band_state": "out",
+ "etfs": [
+  {
+   "symbol": "XEQT",
+   "account": "TFSA",
+   "category": "全球大盘",
+   "close": 45.52,
+   "day_change": -0.1316,
+   "dist_21": 0.7871,
+   "dist_50": 0.2002,
+   "dist_200": 4.5845,
+   "valuation": 10.4382
+  },
+  {
+   "symbol": "VFV",
+   "account": "TFSA",
+   "category": "美国大盘",
+   "close": 191.4,
+   "day_change": -0.3436,
+   "dist_21": 0.6687,
+   "dist_50": 0.0437,
+   "dist_200": 6.0513,
+   "valuation": 7.7291
+  },
+  {
+   "symbol": "QQC",
+   "account": "TFSA",
+   "category": "美国纳指",
+   "close": 47.39,
+   "day_change": -1.0854,
+   "dist_21": -0.9751,
+   "dist_50": -3.8894,
+   "dist_200": 2.3915,
+   "valuation": 3.6653
+  },
+  {
+   "symbol": "TEC",
+   "account": "TFSA",
+   "category": "全球科技",
+   "close": 59.5,
+   "day_change": -1.0806,
+   "dist_21": -1.6359,
+   "dist_50": -4.524,
+   "dist_200": 3.0281,
+   "valuation": 2.3108
+  },
+  {
+   "symbol": "DGRC",
+   "account": "TFSA",
+   "category": "高分红",
+   "close": 58.11,
+   "day_change": 0.6582,
+   "dist_21": 0.6566,
+   "dist_50": 2.1416,
+   "dist_200": 7.2419,
+   "valuation": 21.3546
+  },
+  {
+   "symbol": "CEW",
+   "account": "TFSA",
+   "category": "加国银行",
+   "close": 35.78,
+   "day_change": -0.1396,
+   "dist_21": 0.6626,
+   "dist_50": 1.787,
+   "dist_200": 11.4741,
+   "valuation": 3.1873
+  },
+  {
+   "symbol": "ZLSC",
+   "account": "TFSA",
+   "category": "多空对冲/因子",
+   "close": 49.29,
+   "day_change": -0.0608,
+   "dist_21": -0.0676,
+   "dist_50": 0.6844,
+   "dist_200": 4.5632,
+   "valuation": 17.8571
+  },
+  {
+   "symbol": "XMV",
+   "account": "TFSA",
+   "category": "加国低波动",
+   "close": 63.3,
+   "day_change": 0.2217,
+   "dist_21": 1.7163,
+   "dist_50": 3.8681,
+   "dist_200": 7.6295,
+   "valuation": 0.5578
+  },
+  {
+   "symbol": "VEQT",
+   "account": "RRSP",
+   "category": "全球大盘",
+   "close": 61.95,
+   "day_change": -0.1612,
+   "dist_21": 0.6943,
+   "dist_50": 0.0472,
+   "dist_200": 4.4084,
+   "valuation": 3.9841
+  },
+  {
+   "symbol": "ZSP",
+   "account": "RRSP",
+   "category": "美国大盘",
+   "close": 118.18,
+   "day_change": -0.3289,
+   "dist_21": 0.6607,
+   "dist_50": 0.0363,
+   "dist_200": 6.0482,
+   "valuation": 8.7649
+  },
+  {
+   "symbol": "HXQ",
+   "account": "RRSP",
+   "category": "美国纳指",
+   "close": 114.73,
+   "day_change": -1.1374,
+   "dist_21": -1.0583,
+   "dist_50": -3.9355,
+   "dist_200": 2.3241,
+   "valuation": null
+  },
+  {
+   "symbol": "FINN",
+   "account": "RRSP",
+   "category": "全球科技",
+   "close": 32.7,
+   "day_change": 0.2145,
+   "dist_21": -0.1802,
+   "dist_50": -1.7372,
+   "dist_200": 8.9716,
+   "valuation": null
+  },
+  {
+   "symbol": "XDU",
+   "account": "RRSP",
+   "category": "高分红",
+   "close": 40.28,
+   "day_change": 0.2988,
+   "dist_21": 2.8775,
+   "dist_50": 5.9408,
+   "dist_200": 11.4643,
+   "valuation": 95.3785
+  },
+  {
+   "symbol": "RBNK",
+   "account": "RRSP",
+   "category": "加国银行",
+   "close": 51.89,
+   "day_change": -0.0385,
+   "dist_21": 1.4122,
+   "dist_50": 2.8009,
+   "dist_200": 11.9403,
+   "valuation": 2.3904
+  },
+  {
+   "symbol": "TILV",
+   "account": "RRSP",
+   "category": "世界低波动",
+   "close": 22.59,
+   "day_change": 0.4,
+   "dist_21": 1.9448,
+   "dist_50": 3.5778,
+   "dist_200": 8.0761,
+   "valuation": 8.4462
+  },
+  {
+   "symbol": "ZLU",
+   "account": "RRSP",
+   "category": "美国低波动",
+   "close": 69.03,
+   "day_change": 0.4804,
+   "dist_21": 4.1929,
+   "dist_50": 7.2907,
+   "dist_200": 10.1006,
+   "valuation": 0.4566
+  },
+  {
+   "symbol": "QQU",
+   "account": "RRSP",
+   "category": "短期·纳指2倍",
+   "close": 33.21,
+   "day_change": -2.467,
+   "dist_21": -5.6164,
+   "dist_50": -11.797,
+   "dist_200": -5.969,
+   "valuation": null
+  }
+ ],
+ "usd_etfs": [
+  {
+   "symbol": "VT",
+   "account": "USD_RRSP",
+   "category": "全球大盘",
+   "close": 155.3,
+   "day_change": -0.2889,
+   "dist_21": -0.5164,
+   "dist_50": -1.6383,
+   "dist_200": 1.7038,
+   "valuation": null
+  },
+  {
+   "symbol": "SOXQ",
+   "account": "USD_RRSP",
+   "category": "半导体",
+   "close": 79.85,
+   "day_change": -3.4579,
+   "dist_21": -4.9135,
+   "dist_50": -12.3761,
+   "dist_200": -6.6869,
+   "valuation": null
+  },
+  {
+   "symbol": "SCHD",
+   "account": "USD_RRSP",
+   "category": "美国分红",
+   "close": 36.12,
+   "day_change": 0.5288,
+   "dist_21": 2.0462,
+   "dist_50": 5.5379,
+   "dist_200": 11.8065,
+   "valuation": 9.8361
+  }
+ ],
+ "heatmap": [
+  {
+   "symbol": "XEQT",
+   "section": "TFSA",
+   "close": 45.52,
+   "day_change": -0.1316,
+   "note": null,
+   "weight": 8
+  },
+  {
+   "symbol": "QQC",
+   "section": "TFSA",
+   "close": 47.39,
+   "day_change": -1.0854,
+   "note": null,
+   "weight": 6
+  },
+  {
+   "symbol": "VFV",
+   "section": "TFSA",
+   "close": 191.4,
+   "day_change": -0.3436,
+   "note": null,
+   "weight": 4
+  },
+  {
+   "symbol": "TEC",
+   "section": "TFSA",
+   "close": 59.5,
+   "day_change": -1.0806,
+   "note": null,
+   "weight": 4
+  },
+  {
+   "symbol": "DGRC",
+   "section": "TFSA",
+   "close": 58.11,
+   "day_change": 0.6582,
+   "note": null,
+   "weight": 2
+  },
+  {
+   "symbol": "CEW",
+   "section": "TFSA",
+   "close": 35.78,
+   "day_change": -0.1396,
+   "note": null,
+   "weight": 2
+  },
+  {
+   "symbol": "ZLSC",
+   "section": "TFSA",
+   "close": 49.29,
+   "day_change": -0.0608,
+   "note": null,
+   "weight": 2
+  },
+  {
+   "symbol": "XMV",
+   "section": "TFSA",
+   "close": 63.3,
+   "day_change": 0.2217,
+   "note": null,
+   "weight": 2
+  },
+  {
+   "symbol": "XEG",
+   "section": "TFSA",
+   "close": 28.69,
+   "day_change": 0.9145,
+   "note": null,
+   "weight": 1
+  },
+  {
+   "symbol": "VEQT",
+   "section": "RRSP",
+   "close": 61.95,
+   "day_change": -0.1612,
+   "note": null,
+   "weight": 8
+  },
+  {
+   "symbol": "HXQ",
+   "section": "RRSP",
+   "close": 114.73,
+   "day_change": -1.1374,
+   "note": null,
+   "weight": 8
+  },
+  {
+   "symbol": "ZSP",
+   "section": "RRSP",
+   "close": 118.18,
+   "day_change": -0.3289,
+   "note": null,
+   "weight": 6
+  },
+  {
+   "symbol": "FINN",
+   "section": "RRSP",
+   "close": 32.7,
+   "day_change": 0.2145,
+   "note": null,
+   "weight": 6
+  },
+  {
+   "symbol": "XDU",
+   "section": "RRSP",
+   "close": 40.28,
+   "day_change": 0.2988,
+   "note": null,
+   "weight": 4
+  },
+  {
+   "symbol": "RBNK",
+   "section": "RRSP",
+   "close": 51.89,
+   "day_change": -0.0385,
+   "note": null,
+   "weight": 4
+  },
+  {
+   "symbol": "TILV",
+   "section": "RRSP",
+   "close": 22.59,
+   "day_change": 0.4,
+   "note": null,
+   "weight": 4
+  },
+  {
+   "symbol": "ZLU",
+   "section": "RRSP",
+   "close": 69.03,
+   "day_change": 0.4804,
+   "note": null,
+   "weight": 4
+  },
+  {
+   "symbol": "HXE",
+   "section": "RRSP",
+   "close": 63.63,
+   "day_change": 0.6645,
+   "note": null,
+   "weight": 2
+  },
+  {
+   "symbol": "XMA",
+   "section": "RRSP",
+   "close": 42.18,
+   "day_change": -0.636,
+   "note": null,
+   "weight": 2
+  },
+  {
+   "symbol": "QQU",
+   "section": "RRSP",
+   "close": 33.21,
+   "day_change": -2.467,
+   "note": null,
+   "weight": 2
+  },
+  {
+   "symbol": "XRE",
+   "section": "RRSP",
+   "close": 15.68,
+   "day_change": 1.1613,
+   "note": "观察 · 无目标金额",
+   "weight": 1
+  }
+ ]
+}

@@ -209,7 +209,9 @@
     </div>
 
     <script>
-      var ISSUES = [
+      // 内嵌回退数据：与同目录 data.json 同构（issues 数组）。
+      // 页面加载时优先 fetch('./data.json') 渲染；fetch 失败或文件不存在时用这份渲染，显示结果一致。
+      var FALLBACK_ISSUES = [
         {
           "date": "2026-11-13",
           "weekday": "周五",
@@ -452,23 +454,50 @@
       var switchEl = document.getElementById("dateSwitch");
       var rootEl = document.getElementById("issueRoot");
 
-      ISSUES.forEach(function(issue, i){
-        var btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "date-btn";
-        btn.setAttribute("aria-pressed", i === 0 ? "true" : "false");
-        btn.innerHTML = '<span class="d">' + esc(issue.date) + '</span><span class="w">' + esc(issue.weekday) + ' · 美股收盘简报</span>';
-        btn.addEventListener("click", function(){
-          current = i;
-          var btns = switchEl.querySelectorAll(".date-btn");
-          for (var k = 0; k < btns.length; k++) btns[k].setAttribute("aria-pressed", k === i ? "true" : "false");
-          rootEl.innerHTML = renderIssue(ISSUES[i]);
-          window.scrollTo({top: 0, behavior: "smooth"});
+      function init(issues){
+        switchEl.innerHTML = "";
+        issues.forEach(function(issue, i){
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "date-btn";
+          btn.setAttribute("aria-pressed", i === 0 ? "true" : "false");
+          btn.innerHTML = '<span class="d">' + esc(issue.date) + '</span><span class="w">' + esc(issue.weekday) + ' · 美股收盘简报</span>';
+          btn.addEventListener("click", function(){
+            current = i;
+            var btns = switchEl.querySelectorAll(".date-btn");
+            for (var k = 0; k < btns.length; k++) btns[k].setAttribute("aria-pressed", k === i ? "true" : "false");
+            rootEl.innerHTML = renderIssue(issues[i]);
+            window.scrollTo({top: 0, behavior: "smooth"});
+          });
+          switchEl.appendChild(btn);
         });
-        switchEl.appendChild(btn);
-      });
+        current = 0;
+        rootEl.innerHTML = renderIssue(issues[0]);
+      }
 
-      rootEl.innerHTML = renderIssue(ISSUES[0]);
+      function isValidIssues(data){
+        return Array.isArray(data) && data.length > 0 &&
+          data.every(function(it){
+            return it && typeof it.date === "string" && Array.isArray(it.indices) && Array.isArray(it.sectors);
+          });
+      }
+
+      // 优先加载同目录 data.json（自动同步的数据文件）；失败或数据不合规时回退到内嵌数据。
+      (function loadData(){
+        var fallback = function(){ init(FALLBACK_ISSUES); };
+        if (typeof fetch !== "function") { fallback(); return; }
+        fetch("./data.json", { cache: "no-store" })
+          .then(function(res){
+            if (!res.ok) throw new Error("data.json " + res.status);
+            return res.json();
+          })
+          .then(function(data){
+            var issues = Array.isArray(data) ? data : (data && data.issues);
+            if (isValidIssues(issues)) init(issues);
+            else fallback();
+          })
+          .catch(fallback);
+      })();
     </script>
   </body>
 </html>

@@ -153,7 +153,7 @@
     <div class="wrap">
       <header class="page-head">
         <h1>ETF 趋势仪表盘</h1>
-        <p class="snapshot-line">数据日 <strong>2026-11-13</strong> · 快照（静态页，数据截至该日收盘）</p>
+        <p class="snapshot-line">数据日 <strong id="data-date">2026-11-13</strong> · 快照（静态页，数据截至该日收盘）</p>
         <div class="status-row">
           <div class="status-chip">纳指距 200 日线 <b id="ndx-dist">—</b></div>
           <div class="status-chip">杠杆带状态 <b id="lev-band">—</b></div>
@@ -176,12 +176,14 @@
         </div>
       </section>
 
-      <footer class="page-foot">ETF 趋势仪表盘 · 网页版 — 数据日 2026-11-13 快照。</footer>
+      <footer class="page-foot">ETF 趋势仪表盘 · 网页版 — 数据日 <span id="foot-data-date">2026-11-13</span> 快照。</footer>
     </div>
 
     <script>
       // ===== 数据快照（数据日 2026-11-13，全量嵌入）=====
-      var DATA = {
+      // 加载顺序：先 fetch 同目录 ./data.json，成功则用它渲染；
+      // 失败或文件不存在时回退到下面这份嵌入数据。两条路径数据同构，显示一致。
+      var EMBEDDED_DATA = {
         data_date: "2026-11-13",
         ndx_dist_200: -0.341,
         lev_band_state: "out",
@@ -245,13 +247,17 @@
       function chgClass(v) { return v > 0 ? "up" : (v < 0 ? "down" : "flat"); }
 
       // ===== 页眉状态 =====
-      (function () {
+      function renderHeader() {
+        if (DATA.data_date) {
+          document.getElementById("data-date").textContent = DATA.data_date;
+          document.getElementById("foot-data-date").textContent = DATA.data_date;
+        }
         var ndx = document.getElementById("ndx-dist");
         ndx.textContent = fmtPct(DATA.ndx_dist_200);
         ndx.className = DATA.ndx_dist_200 < 0 ? "neg" : "pos";
         var lev = document.getElementById("lev-band");
         lev.textContent = DATA.lev_band_state === "out" ? "带外 · 未部署" : DATA.lev_band_state;
-      })();
+      }
 
       // ===== 每日数据面板 =====
       function panelHTML(e) {
@@ -274,7 +280,7 @@
             '<div class="metric"><span class="m-label">估值分位</span>' + val + '</div>' +
           '</div></article>';
       }
-      (function () {
+      function renderPanels() {
         var groups = [
           { title: "TFSA", items: DATA.etfs.filter(function (e) { return e.account === "TFSA"; }) },
           { title: "RRSP", items: DATA.etfs.filter(function (e) { return e.account === "RRSP"; }) },
@@ -286,7 +292,7 @@
                   g.items.map(panelHTML).join("") + '</div>';
         });
         document.getElementById("daily-groups").innerHTML = html;
-      })();
+      }
 
       // ===== 热力图（squarified treemap）=====
       function mixColor(t) {
@@ -383,7 +389,7 @@
         });
       }
       var heatSections = [];
-      (function () {
+      function setupHeatmaps() {
         var host = document.getElementById("heatmap-groups");
         ["TFSA", "RRSP"].forEach(function (sec) {
           var title = document.createElement("h3");
@@ -401,7 +407,7 @@
             items: DATA.heatmap.filter(function (d) { return d.section === sec; })
           });
         });
-      })();
+      }
       function drawHeatmaps() {
         var mobile = window.innerWidth <= 560;
         heatSections.forEach(function (s) {
@@ -413,7 +419,30 @@
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(drawHeatmaps, 120);
       });
-      drawHeatmaps();
+
+      // ===== 启动：优先 ./data.json，失败回退嵌入数据 =====
+      var DATA = null;
+      var started = false;
+      function start(data) {
+        if (started || !data) return;
+        started = true;
+        DATA = data;
+        renderHeader();
+        renderPanels();
+        setupHeatmaps();
+        drawHeatmaps();
+      }
+      if (window.fetch) {
+        fetch("./data.json", { cache: "no-store" })
+          .then(function (res) {
+            if (!res.ok) throw new Error("data.json " + res.status);
+            return res.json();
+          })
+          .then(function (json) { start(json); })
+          .catch(function () { start(EMBEDDED_DATA); });
+      } else {
+        start(EMBEDDED_DATA);
+      }
     </script>
   </body>
 </html>
