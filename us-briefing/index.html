@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light" />
+    <link rel="icon" href="data:," />
+    <title>美股每日简报 · 网页版</title>
+    <style>
+      :root{
+        --bg:#F7F4EE;
+        --ink:#2B2620;
+        --ink-soft:#5C554B;
+        --ink-faint:#8A8175;
+        --brick:#9C2F1F;
+        --up:#1E7A3C;
+        --up-bg:rgba(30,122,60,.09);
+        --down:#B3352B;
+        --down-bg:rgba(179,53,43,.08);
+        --sel:#F6E7B2;
+        --shadow-out: 8px 8px 18px rgba(163,152,133,.45), -8px -8px 18px rgba(255,255,255,.95);
+        --shadow-out-sm: 5px 5px 12px rgba(163,152,133,.40), -5px -5px 12px rgba(255,255,255,.9);
+        --shadow-in: inset 4px 4px 10px rgba(163,152,133,.35), inset -4px -4px 10px rgba(255,255,255,.85);
+        --radius:20px;
+      }
+      *{box-sizing:border-box;}
+      html{-webkit-text-size-adjust:100%;}
+      body{
+        margin:0;background:var(--bg);color:var(--ink);
+        font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+        line-height:1.55;
+      }
+      button,[role="button"],select,summary,input:not([type="checkbox"],[type="radio"]){min-height:2.25rem;}
+      .wrap{max-width:960px;margin:0 auto;padding:20px 16px 56px;}
+
+      /* ---------- 页眉 ---------- */
+      .page-head{margin:6px 0 18px;}
+      .page-head h1{font-size:26px;line-height:1.25;margin:0 0 6px;font-weight:800;letter-spacing:.01em;}
+      .page-head .sub{color:var(--ink-soft);font-size:14px;margin:0;}
+      .snapshot-tag{
+        display:inline-block;margin-left:8px;padding:1px 10px;border-radius:999px;
+        background:var(--sel);color:#6B5510;font-size:12px;font-weight:700;vertical-align:2px;
+        box-shadow:var(--shadow-out-sm);
+      }
+
+      /* ---------- 日期切换 ---------- */
+      .date-switch{
+        display:flex;gap:12px;flex-wrap:wrap;
+        background:var(--bg);border-radius:var(--radius);
+        box-shadow:var(--shadow-in);
+        padding:12px;margin:0 0 22px;
+      }
+      .date-btn{
+        flex:1 1 150px;border:0;cursor:pointer;border-radius:14px;
+        background:var(--bg);box-shadow:var(--shadow-out-sm);
+        padding:10px 14px;text-align:left;color:var(--ink);
+        font-family:inherit;
+      }
+      .date-btn .d{font-size:17px;font-weight:800;display:block;}
+      .date-btn .w{font-size:12.5px;color:var(--ink-soft);display:block;margin-top:1px;}
+      .date-btn[aria-pressed="true"]{background:var(--sel);box-shadow:var(--shadow-in);}
+      .date-btn[aria-pressed="true"] .w{color:#6B5510;}
+      .date-btn:focus-visible{outline:2px solid var(--brick);outline-offset:2px;}
+
+      /* ---------- 段落卡片 ---------- */
+      section.card{
+        background:var(--bg);border-radius:var(--radius);
+        box-shadow:var(--shadow-out);
+        padding:20px 20px 22px;margin:0 0 22px;
+      }
+      section.card h2{
+        font-size:17px;margin:0 0 4px;font-weight:800;
+        display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;
+      }
+      section.card h2 .en{font-size:12px;color:var(--ink-faint);font-weight:600;letter-spacing:.04em;}
+      .sec-note{color:var(--ink-soft);font-size:14px;margin:8px 0 0;}
+
+      /* 一句话定性 */
+      .headline-card{padding:24px 22px;}
+      .headline-card .kicker{font-size:12.5px;font-weight:700;color:var(--brick);letter-spacing:.08em;margin:0 0 8px;}
+      .headline-card p.lede{font-size:20px;line-height:1.5;font-weight:700;margin:0;}
+
+      /* ---------- 指数表 ---------- */
+      table{border-collapse:collapse;width:100%;font-size:14px;}
+      th,td{padding:9px 8px;text-align:right;white-space:nowrap;}
+      th{color:var(--ink-soft);font-weight:700;font-size:12.5px;border-bottom:2px solid rgba(163,152,133,.35);}
+      td{border-bottom:1px solid rgba(163,152,133,.22);}
+      tbody tr:last-child td{border-bottom:0;}
+      th:first-child,td:first-child{text-align:left;}
+      td.name{font-weight:700;}
+      td.name .sym{color:var(--ink-faint);font-weight:600;font-size:12px;margin-left:4px;}
+      td.close{font-weight:700;font-variant-numeric:tabular-nums;}
+      .num{font-variant-numeric:tabular-nums;}
+      .up{color:var(--up);font-weight:700;}
+      .down{color:var(--down);font-weight:700;}
+      .flat{color:var(--ink-soft);font-weight:700;}
+
+      /* ---------- 指数聚焦大卡 ---------- */
+      .focus-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px;}
+      .focus-card{
+        background:var(--bg);border-radius:16px;box-shadow:var(--shadow-out-sm);
+        padding:16px 18px 14px;
+      }
+      .focus-card .fname{font-size:15px;font-weight:800;margin:0;}
+      .focus-card .fname .sym{color:var(--ink-faint);font-size:12px;font-weight:600;margin-left:5px;}
+      .focus-card .fclose{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;margin:4px 0 0;line-height:1.15;}
+      .focus-card .fchg{font-size:15px;margin:0 0 10px;}
+      .focus-rows{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;font-size:13.5px;}
+      .focus-rows .row{display:flex;justify-content:space-between;gap:8px;border-top:1px solid rgba(163,152,133,.22);padding-top:6px;}
+      .focus-rows .lbl{color:var(--ink-soft);}
+      .focus-rows .val{font-variant-numeric:tabular-nums;font-weight:700;}
+
+      /* ---------- 板块 ---------- */
+      .sector-list{list-style:none;margin:12px 0 0;padding:0;}
+      .sector-list li{
+        display:grid;grid-template-columns:26px 1fr auto;align-items:center;gap:10px;
+        padding:8px 2px;border-bottom:1px solid rgba(163,152,133,.22);
+      }
+      .sector-list li:last-child{border-bottom:0;}
+      .sector-list .rank{color:var(--ink-faint);font-size:13px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;}
+      .sector-list .sname{font-weight:700;font-size:14.5px;}
+      .sector-list .sname .sym{color:var(--ink-faint);font-weight:600;font-size:12px;margin-left:5px;}
+      .sector-list .smeta{display:block;font-weight:400;color:var(--ink-soft);font-size:12.5px;margin-top:1px;}
+      .sector-list .bar-wrap{grid-column:2 / 3;height:6px;border-radius:3px;background:rgba(163,152,133,.18);overflow:hidden;margin-top:5px;}
+      .sector-list .bar{height:100%;border-radius:3px;}
+      .sector-list .bar.upb{background:var(--up);}
+      .sector-list .bar.downb{background:var(--down);}
+      .sector-list .schg{font-size:15px;font-variant-numeric:tabular-nums;min-width:74px;text-align:right;}
+
+      /* ---------- 经济 ---------- */
+      .econ-upcoming{list-style:none;margin:12px 0 0;padding:0;}
+      .econ-upcoming li{
+        display:flex;gap:12px;padding:8px 2px;border-bottom:1px solid rgba(163,152,133,.22);font-size:14px;
+      }
+      .econ-upcoming li:last-child{border-bottom:0;}
+      .econ-upcoming .udate{
+        flex:0 0 auto;font-weight:800;font-variant-numeric:tabular-nums;color:var(--brick);font-size:13.5px;padding-top:1px;
+      }
+      .econ-upcoming .uname{font-weight:700;}
+      .econ-upcoming .unote{display:block;color:var(--ink-soft);font-size:13px;font-weight:400;}
+      h3.sub-h{font-size:14.5px;margin:18px 0 2px;font-weight:800;}
+
+      /* ---------- 博主 ---------- */
+      .blogger{
+        background:var(--bg);border-radius:16px;box-shadow:var(--shadow-out-sm);
+        padding:14px 16px;margin-top:14px;
+      }
+      .blogger .chan{font-size:13px;font-weight:800;color:var(--brick);margin:0 0 3px;}
+      .blogger .vtitle{margin:0 0 6px;font-size:15px;line-height:1.45;}
+      .blogger .vtitle a{color:var(--ink);text-decoration:none;font-weight:700;}
+      .blogger .vtitle a:hover{text-decoration:underline;}
+      .blogger .basis{
+        display:inline-block;font-size:11.5px;font-weight:700;color:var(--ink-soft);
+        background:rgba(163,152,133,.16);border-radius:999px;padding:1px 9px;margin-bottom:6px;
+      }
+      .blogger .view{margin:0;font-size:14px;color:var(--ink-soft);}
+      .consensus-box{
+        margin-top:16px;border-radius:16px;box-shadow:var(--shadow-in);padding:14px 16px;
+      }
+      .consensus-box .ch{font-size:13px;font-weight:800;color:var(--brick);margin:0 0 5px;letter-spacing:.05em;}
+      .consensus-box p{margin:0;font-size:14.5px;}
+      .disclaimer{font-size:12.5px;color:var(--ink-faint);margin:12px 0 0;}
+
+      /* ---------- 监测 ---------- */
+      .monitor-card p{font-size:15.5px;margin:6px 0 0;font-weight:600;}
+
+      footer{color:var(--ink-faint);font-size:12.5px;text-align:center;margin-top:8px;}
+
+      /* ---------- 手机：指数表转卡片 ---------- */
+      @media (max-width:680px){
+        .wrap{padding:16px 12px 44px;}
+        .page-head h1{font-size:23px;}
+        .headline-card p.lede{font-size:18px;}
+        section.card{padding:16px 14px 18px;}
+        .focus-grid{grid-template-columns:1fr;}
+        table.index-table thead{display:none;}
+        table.index-table,table.index-table tbody,table.index-table tr,table.index-table td{display:block;width:100%;}
+        table.index-table tr{
+          background:var(--bg);border-radius:14px;box-shadow:var(--shadow-out-sm);
+          padding:10px 14px 6px;margin-top:12px;
+        }
+        table.index-table td{
+          border-bottom:1px solid rgba(163,152,133,.18);
+          display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+          padding:6px 0;text-align:right;white-space:normal;
+        }
+        table.index-table td:last-child{border-bottom:0;}
+        table.index-table td::before{
+          content:attr(data-lbl);color:var(--ink-soft);font-size:12.5px;font-weight:700;text-align:left;
+        }
+        table.index-table td.name{font-size:15.5px;}
+        table.index-table td.name::before{content:"";}
+        table.econ-table th,table.econ-table td{white-space:normal;}
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="page-head">
+        <h1>美股每日简报<span class="snapshot-tag">快照版</span></h1>
+        <p class="sub">收录最近两期：2026-11-13（周五）与 2026-11-12（周四）。数据为建页时快照，不再更新。</p>
+      </header>
+
+      <div class="date-switch" role="group" aria-label="选择期数" id="dateSwitch"></div>
+
+      <main id="issueRoot"></main>
+
+      <footer>本页为「美股每日简报」的静态快照版 · 博主观点仅转述原视频，不代表推荐或背书</footer>
+    </div>
+
+    <script>
+      var ISSUES = [
+        {
+          "date": "2026-11-13",
+          "weekday": "周五",
+          "headline": "纳指100跌1.22%失守200日线，标普500跌0.40%，PPI高企与加息预期压制大盘",
+          "indices": [
+            {"name":"标普500","symbol":"^GSPC","close":7561.67,"changePct":-0.4,"weekPct":2.51,"change21Pct":-2.36,"ma50DistPct":-1.38,"ma200DistPct":3.02,"drawdown1yPct":-3.29},
+            {"name":"纳斯达克100","symbol":"^NDX","close":27943.74,"changePct":-1.22,"weekPct":3.53,"change21Pct":-6.65,"ma50DistPct":-5.29,"ma200DistPct":-0.34,"drawdown1yPct":-10.51},
+            {"name":"纳斯达克综合","symbol":"^IXIC","close":25136.27,"changePct":-0.91,"weekPct":2.27,"change21Pct":-5.9,"ma50DistPct":-4.61,"ma200DistPct":0.0,"drawdown1yPct":-8.93},
+            {"name":"道琼斯","symbol":"^DJI","close":52347.55,"changePct":0.1,"weekPct":2.07,"change21Pct":0.33,"ma50DistPct":0.72,"ma200DistPct":3.13,"drawdown1yPct":-3.68},
+            {"name":"罗素2000","symbol":"^RUT","close":2790.49,"changePct":-0.31,"weekPct":1.32,"change21Pct":0.84,"ma50DistPct":-1.2,"ma200DistPct":-0.76,"drawdown1yPct":-9.06}
+          ],
+          "sectors": [
+            {"name":"必需消费","symbol":"XLP","close":92.35,"changePct":1.42,"weekPct":2.52},
+            {"name":"通信服务","symbol":"XLC","close":108.69,"changePct":1.05,"weekPct":3.72},
+            {"name":"能源","symbol":"XLE","close":64.96,"changePct":0.98,"weekPct":5.42},
+            {"name":"金融","symbol":"XLF","close":58.68,"changePct":0.81,"weekPct":2.66},
+            {"name":"医疗","symbol":"XLV","close":188.85,"changePct":0.54,"weekPct":2.19},
+            {"name":"公用事业","symbol":"XLU","close":44.04,"changePct":0.52,"weekPct":2.11},
+            {"name":"房地产","symbol":"XLRE","close":44.37,"changePct":0.02,"weekPct":0.84},
+            {"name":"材料","symbol":"XLB","close":52.23,"changePct":-0.21,"weekPct":0.54},
+            {"name":"工业","symbol":"XLI","close":168.78,"changePct":-0.39,"weekPct":3.76},
+            {"name":"可选消费","symbol":"XLY","close":119.98,"changePct":-0.4,"weekPct":2.04},
+            {"name":"科技","symbol":"XLK","close":170.28,"changePct":-2.01,"weekPct":3.36}
+          ],
+          "sectorNote": "科技股领跌（-2.01%）、必需消费领涨（+1.42%），资金从高估值成长板块轮动至防御与价值板块，大盘分化加剧。",
+          "econNote": "10月PPI环比+0.3%略低于预期，但同比+6.5%创2022年11月以来新高；9月PPI环比修正至+1.4%，日历前值按修正前+1.3%列示。",
+          "econReleased": [
+            {"name":"生产者价格指数（PPI）环比","actual":"+0.3%","expected":"+0.4%","previous":"+1.3%"},
+            {"name":"核心生产者价格指数（核心PPI）环比","actual":"+0.3%","expected":"+0.3%","previous":"+0.7%"},
+            {"name":"生产者价格指数（PPI）同比","actual":"+6.5%","expected":"+6.6%","previous":"+6.3%"},
+            {"name":"核心生产者价格指数（核心PPI）同比","actual":"+5.0%","expected":"+5.0%","previous":"+5.0%"}
+          ],
+          "econUpcoming": [
+            {"date":"2026-11-16","name":"纽约联储制造业指数（11月）","note":"市场预期约19，前值25.5"},
+            {"date":"2026-11-17","name":"零售销售（10月）","note":"市场预期环比+0.2%"},
+            {"date":"2026-11-18","name":"FOMC会议纪要（10月27–28日会议）","note":null},
+            {"date":"2026-11-19","name":"初请失业金人数","note":"市场预期约19.7万人"},
+            {"date":"2026-11-20","name":"密歇根大学消费者信心指数终值（11月）","note":"市场预期53.3"}
+          ],
+          "bloggers": [
+            {"channel":"娜娜美股","title":"Burry哥又磨刀霍霍！NaNa说美股(2026.11.13)","url":"https://www.youtube.com/watch?v=i_8Nw7IrBvM","basis":"据标题与简介","view":"她转述“大空头”Burry再度加码做空纳斯达克100的消息，提示纳指与半导体板块高估值下的回调风险，短期对纳指偏谨慎。"},
+            {"channel":"视野环球财经","title":"美股 循环信贷、梯云纵裂痕！半导体全军覆没！黄仁勋辞职，有融资机构要跑！ AMD、AVGO、MRVL、TSM！","url":"https://www.youtube.com/watch?v=sLKfEeiSTKs","basis":"据标题与简介","view":"他指出AI“循环信贷”出现裂痕、有融资机构撤离迹象，半导体全线走弱拖累大盘，短期信用风险可能继续向指数层面传导。"},
+            {"channel":"CNBC Television","title":"Market Open: Stocks Mixed, Wholesale Inflation at Four-Year High, Nvidia Fallout • 11/13/26","url":"https://www.youtube.com/watch?v=4tKmE7vAlhU","basis":"据标题与简介","view":"开盘综述称三大指数涨跌互现，10月PPI同比升至四年高点令12月加息预期升温，芯片股风波拖累下大盘开盘承压。"},
+            {"channel":"Equity4keeps","title":"U.S Pre-Markets Live!! November 13th, 2026","url":"https://www.youtube.com/watch?v=K8tcMpu-uGE","basis":"据标题与简介","view":"盘前直播称美股期指小幅走低，市场等待10月PPI数据，12月加息预期是决定大盘方向的关键。"}
+          ],
+          "consensus": "本期四条内容均对大盘短期偏谨慎：纳指100已跌破200日线、PPI同比创四年高点令加息预期升温是共同担忧。分歧在于幅度与传导路径：一方聚焦做空押注与信用裂痕、担心估值系统性回调，另一方只看到开盘承压与盘前观望、等待PPI落地后再定方向。周线仍收涨、标普500守在200日线上方，是多方的主要依据。",
+          "monitorNote": "纳斯达克100距200日线 -0.34%（线下）、距50日线 -5.29%；标普500距200日线 +3.02%（线上）、距50日线 -1.38%。"
+        },
+        {
+          "date": "2026-11-12",
+          "weekday": "周四",
+          "headline": "纳指与标普小幅收跌，长端利率重上5%与油价上行压制反弹，纳指仍远在50日线下方",
+          "indices": [
+            {"name":"标普500","symbol":"^GSPC","close":7592.4,"changePct":-0.35,"weekPct":3.25,"change21Pct":-1.64,"ma50DistPct":-1.03,"ma200DistPct":3.48,"drawdown1yPct":-2.9},
+            {"name":"纳斯达克100","symbol":"^NDX","close":28289.19,"changePct":-0.3,"weekPct":6.23,"change21Pct":-5.55,"ma50DistPct":-4.22,"ma200DistPct":0.93,"drawdown1yPct":-9.4},
+            {"name":"纳斯达克综合","symbol":"^IXIC","close":25366.09,"changePct":-0.39,"weekPct":4.32,"change21Pct":-4.97,"ma50DistPct":-3.84,"ma200DistPct":0.94,"drawdown1yPct":-8.09},
+            {"name":"道琼斯","symbol":"^DJI","close":52297.1,"changePct":-0.36,"weekPct":1.5,"change21Pct":1.31,"ma50DistPct":0.57,"ma200DistPct":3.07,"drawdown1yPct":-3.78},
+            {"name":"罗素2000","symbol":"^RUT","close":2799.06,"changePct":-1.66,"weekPct":2.53,"change21Pct":2.55,"ma50DistPct":-1.02,"ma200DistPct":-0.43,"drawdown1yPct":-8.78}
+          ],
+          "sectors": [
+            {"name":"能源","symbol":"XLE","close":64.33,"changePct":1.51,"weekPct":4.38},
+            {"name":"公用事业","symbol":"XLU","close":43.81,"changePct":-0.02,"weekPct":1.18},
+            {"name":"科技","symbol":"XLK","close":173.77,"changePct":-0.34,"weekPct":7.01},
+            {"name":"必需消费","symbol":"XLP","close":91.06,"changePct":-0.43,"weekPct":-0.21},
+            {"name":"可选消费","symbol":"XLY","close":120.46,"changePct":-0.44,"weekPct":2.4},
+            {"name":"房地产","symbol":"XLRE","close":44.36,"changePct":-0.52,"weekPct":0.14},
+            {"name":"医疗","symbol":"XLV","close":187.83,"changePct":-0.59,"weekPct":1.58},
+            {"name":"金融","symbol":"XLF","close":58.21,"changePct":-0.72,"weekPct":1.23},
+            {"name":"工业","symbol":"XLI","close":169.44,"changePct":-0.89,"weekPct":4.29},
+            {"name":"通信服务","symbol":"XLC","close":107.56,"changePct":-0.96,"weekPct":3.09},
+            {"name":"材料","symbol":"XLB","close":52.34,"changePct":-1.28,"weekPct":0.02}
+          ],
+          "sectorNote": "能源板块独涨1.51%领跑、近5日亦涨4.38%，其余板块普跌，材料跌1.28%、通信服务跌0.96%、工业跌0.89%领跌，公用事业仅跌0.02%相对抗跌，显示资金转向能源与防御、成长与周期承压的轮动格局。",
+          "econNote": "当日重磅数据仅初请失业金一项，略高于预期但仍处历史低位，未改变劳动力市场稳健的图景；市场焦点更多在长端收益率重上5%与油价上行，次日PPI将验证通胀黏性。",
+          "econReleased": [
+            {"name":"初请失业金人数","actual":"200,000人","expected":"195,000人","previous":"191,000人（修正后，原报189,000人）"}
+          ],
+          "econUpcoming": [
+            {"date":"2026-11-13","name":"生产者价格指数（PPI）","note":"10月PPI，预期环比约+0.4%，前值+1.3%"},
+            {"date":"2026-11-17","name":"零售销售","note":"10月零售销售"},
+            {"date":"2026-11-18","name":"FOMC会议纪要","note":"10月FOMC会议纪要，14:00 ET公布"},
+            {"date":"2026-11-19","name":"初请失业金人数","note":"周度初请数据"},
+            {"date":"2026-11-20","name":"密歇根大学消费者信心指数","note":"11月消费者信心终值"}
+          ],
+          "bloggers": [
+            {"channel":"娜娜美股","title":"一切尘埃落定！NaNa说美股(2026.11.12)","url":"https://www.youtube.com/watch?v=DyrS1a1nGRc","basis":"据标题与简介","view":"她以「一切尘埃落定」概括当日大盘，认为此前悬在市场上方的不确定事项已经落定；因仅据标题与简介，具体指数点位与方向判断未作扩写。"},
+            {"channel":"CNBC Television","title":"Market Close: Stocks Lower, Nvidia Falls After CEO Exit, Oil and Yields Rise • 11/12/26","url":"https://www.youtube.com/watch?v=-PoW5xeF6iE","basis":"据标题与简介","view":"其收盘综述以美股收低定性当日，指出油价与美债收益率上行是压制标普500与纳指的指数层面因素；标题涉及的个股部分按规则略去。"},
+            {"channel":"Bloomberg Television","title":"Stocks Down as Nvidia CEO Resigns | Closing Bell","url":"https://www.youtube.com/watch?v=Jspact-1r3E","basis":"据标题与简介","view":"其《Closing Bell》收盘综述以美股下跌概括当日行情，显示大盘在外部冲击下仍以收跌告终；标题涉及的个股部分按规则略去。"},
+            {"channel":"Investor's Business Daily","title":"Stocks Weather Nvidia News; Arista Networks, Five Below, Cloudflare In Focus | Stock Market Today","url":"https://www.youtube.com/watch?v=Cltst5yCKM8","basis":"据标题与简介","view":"主持人复盘周四市场走势，标题显示大盘经受住了科技龙头相关消息的冲击、当日走势相对抗跌；节目同时讨论的个股部分按规则略去。"}
+          ],
+          "consensus": "本期收录条目一致显示指数层面收跌但跌幅有限：CNBC与Bloomberg均以美股收低定性当日，IBD则强调大盘经受住了相关消息冲击、相对抗跌，分歧主要在压力来源与韧性的权重，而非方向本身。娜娜以「一切尘埃落定」概括当日，同样偏向不确定性落定的解读。因本期各条目均仅据标题与简介、无字幕实录条目，上述共识仅作辅助参考；结合给定指标，纳指距50日线仍达-4.22%、标普冲50日线未果，指数层面尚未扭转弱势。",
+          "monitorNote": "纳斯达克100距200日线 +0.93%（线上）、距50日线 -4.22%；标普500距200日线 +3.48%（线上）、距50日线 -1.03%。"
+        }
+      ];
+
+      function esc(s){
+        return String(s == null ? "" : s)
+          .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+          .replace(/"/g,"&quot;");
+      }
+      function fmtClose(v){
+        return Number(v).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+      }
+      function fmtPct(v){
+        var n = Number(v);
+        var s = (n > 0 ? "+" : "") + n.toFixed(2) + "%";
+        return s;
+      }
+      function pctCls(v){
+        var n = Number(v);
+        if (n > 0) return "up";
+        if (n < 0) return "down";
+        return "flat";
+      }
+      function pctCell(v){
+        return '<span class="' + pctCls(v) + '">' + fmtPct(v) + '</span>';
+      }
+
+      function focusCard(ix){
+        var rows = [
+          ["近5日", ix.weekPct],
+          ["近21日", ix.change21Pct],
+          ["距50日线", ix.ma50DistPct],
+          ["距200日线", ix.ma200DistPct],
+          ["距1年高回撤", ix.drawdown1yPct]
+        ];
+        var rowsHtml = rows.map(function(r){
+          return '<div class="row"><span class="lbl">' + r[0] + '</span><span class="val ' + pctCls(r[1]) + '">' + fmtPct(r[1]) + '</span></div>';
+        }).join("");
+        return '<div class="focus-card">' +
+          '<p class="fname">' + esc(ix.name) + '<span class="sym">' + esc(ix.symbol) + '</span></p>' +
+          '<p class="fclose">' + fmtClose(ix.close) + '</p>' +
+          '<p class="fchg">当日 ' + pctCell(ix.changePct) + '</p>' +
+          '<div class="focus-rows">' + rowsHtml + '</div>' +
+        '</div>';
+      }
+
+      function renderIssue(issue){
+        var ndx = null, gspc = null;
+        issue.indices.forEach(function(ix){
+          if (ix.symbol === "^NDX") ndx = ix;
+          if (ix.symbol === "^GSPC") gspc = ix;
+        });
+
+        var idxRows = issue.indices.map(function(ix){
+          return '<tr>' +
+            '<td class="name" data-lbl="">' + esc(ix.name) + '<span class="sym">' + esc(ix.symbol) + '</span></td>' +
+            '<td class="close" data-lbl="收盘">' + fmtClose(ix.close) + '</td>' +
+            '<td data-lbl="当日涨跌">' + pctCell(ix.changePct) + '</td>' +
+            '<td data-lbl="近5日">' + pctCell(ix.weekPct) + '</td>' +
+            '<td data-lbl="近21日">' + pctCell(ix.change21Pct) + '</td>' +
+            '<td data-lbl="距50日线">' + pctCell(ix.ma50DistPct) + '</td>' +
+            '<td data-lbl="距200日线">' + pctCell(ix.ma200DistPct) + '</td>' +
+            '<td data-lbl="距1年高回撤">' + pctCell(ix.drawdown1yPct) + '</td>' +
+          '</tr>';
+        }).join("");
+
+        var maxAbs = 0;
+        issue.sectors.forEach(function(s){ maxAbs = Math.max(maxAbs, Math.abs(s.changePct)); });
+        if (maxAbs === 0) maxAbs = 1;
+        var sectorRows = issue.sectors.map(function(s, i){
+          var w = Math.max(4, Math.round(Math.abs(s.changePct) / maxAbs * 100));
+          var barCls = s.changePct >= 0 ? "bar upb" : "bar downb";
+          return '<li>' +
+            '<span class="rank">' + (i + 1) + '</span>' +
+            '<span><span class="sname">' + esc(s.name) + '<span class="sym">' + esc(s.symbol) + '</span></span>' +
+            '<span class="smeta">收盘 ' + fmtClose(s.close) + ' · 近5日 ' + fmtPct(s.weekPct) + '</span>' +
+            '<span class="bar-wrap"><span class="' + barCls + '" style="display:block;width:' + w + '%"></span></span></span>' +
+            '<span class="schg">' + pctCell(s.changePct) + '</span>' +
+          '</li>';
+        }).join("");
+
+        var econRows = issue.econReleased.map(function(e){
+          return '<tr><td class="name">' + esc(e.name) + '</td>' +
+            '<td class="num" style="font-weight:700">' + esc(e.actual) + '</td>' +
+            '<td class="num">' + esc(e.expected) + '</td>' +
+            '<td class="num">' + esc(e.previous) + '</td></tr>';
+        }).join("");
+
+        var upcomingRows = issue.econUpcoming.map(function(u){
+          return '<li><span class="udate">' + esc(u.date.slice(5)) + '</span>' +
+            '<span><span class="uname">' + esc(u.name) + '</span>' +
+            (u.note ? '<span class="unote">' + esc(u.note) + '</span>' : '') +
+            '</span></li>';
+        }).join("");
+
+        var bloggerCards = issue.bloggers.map(function(b){
+          return '<article class="blogger">' +
+            '<p class="chan">' + esc(b.channel) + '</p>' +
+            '<p class="vtitle"><a href="' + esc(b.url) + '" target="_blank" rel="noopener noreferrer">' + esc(b.title) + '</a></p>' +
+            '<span class="basis">' + esc(b.basis) + '</span>' +
+            '<p class="view">' + esc(b.view) + '</p>' +
+          '</article>';
+        }).join("");
+
+        return '' +
+        '<section class="card headline-card">' +
+          '<p class="kicker">一句话定性 · ' + esc(issue.date) + '（' + esc(issue.weekday) + '）</p>' +
+          '<p class="lede">' + esc(issue.headline) + '</p>' +
+        '</section>' +
+
+        '<section class="card">' +
+          '<h2>主要指数 <span class="en">INDICES</span></h2>' +
+          '<table class="index-table"><thead><tr>' +
+            '<th>指数</th><th>收盘</th><th>当日涨跌</th><th>近5日</th><th>近21日</th><th>距50日线</th><th>距200日线</th><th>距1年高回撤</th>' +
+          '</tr></thead><tbody>' + idxRows + '</tbody></table>' +
+          '<h3 class="sub-h">指数聚焦 · 纳指100 与标普500</h3>' +
+          '<div class="focus-grid">' + focusCard(ndx) + focusCard(gspc) + '</div>' +
+        '</section>' +
+
+        '<section class="card">' +
+          '<h2>板块涨跌 <span class="en">SECTORS</span></h2>' +
+          '<ol class="sector-list">' + sectorRows + '</ol>' +
+          '<p class="sec-note">' + esc(issue.sectorNote) + '</p>' +
+        '</section>' +
+
+        '<section class="card">' +
+          '<h2>经济数据 <span class="en">ECONOMY</span></h2>' +
+          '<table class="econ-table"><thead><tr><th>数据</th><th>实际</th><th>预期</th><th>前值</th></tr></thead>' +
+          '<tbody>' + econRows + '</tbody></table>' +
+          '<p class="sec-note">' + esc(issue.econNote) + '</p>' +
+          '<h3 class="sub-h">后续日历</h3>' +
+          '<ul class="econ-upcoming">' + upcomingRows + '</ul>' +
+        '</section>' +
+
+        '<section class="card">' +
+          '<h2>博主观点 <span class="en">VIEWS</span></h2>' +
+          bloggerCards +
+          '<div class="consensus-box"><p class="ch">本期共识与分歧</p><p>' + esc(issue.consensus) + '</p></div>' +
+          '<p class="disclaimer">以上为对原视频内容的转述，依据标签标明来源范围；仅供参考，不构成投资建议。</p>' +
+        '</section>' +
+
+        '<section class="card monitor-card">' +
+          '<h2>与监测相关 <span class="en">MONITOR</span></h2>' +
+          '<p>' + esc(issue.monitorNote) + '</p>' +
+        '</section>';
+      }
+
+      var current = 0;
+      var switchEl = document.getElementById("dateSwitch");
+      var rootEl = document.getElementById("issueRoot");
+
+      ISSUES.forEach(function(issue, i){
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "date-btn";
+        btn.setAttribute("aria-pressed", i === 0 ? "true" : "false");
+        btn.innerHTML = '<span class="d">' + esc(issue.date) + '</span><span class="w">' + esc(issue.weekday) + ' · 美股收盘简报</span>';
+        btn.addEventListener("click", function(){
+          current = i;
+          var btns = switchEl.querySelectorAll(".date-btn");
+          for (var k = 0; k < btns.length; k++) btns[k].setAttribute("aria-pressed", k === i ? "true" : "false");
+          rootEl.innerHTML = renderIssue(ISSUES[i]);
+          window.scrollTo({top: 0, behavior: "smooth"});
+        });
+        switchEl.appendChild(btn);
+      });
+
+      rootEl.innerHTML = renderIssue(ISSUES[0]);
+    </script>
+  </body>
+</html>
